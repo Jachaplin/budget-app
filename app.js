@@ -1,13 +1,11 @@
 // BUDGET CONTROLLER!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 var budgetController = (function() {
 
-// CONSTRUCTORS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+// CONSTRUCTORS
 //***********************************************	
 	
-	// Expence Constructor
-	var Expence = function(id, description, value) {
+	// Expense Constructor
+	var Expense = function(id, description, value) {
 		this.id = id
 		this.description = description
 		this.value = value
@@ -25,7 +23,7 @@ var budgetController = (function() {
 	var calculateTotal = function(type) {
 		var sum = 0
 		
-		// loop threw each allItems type. The types are inc and exp
+		// Loop threw each allItems type. The types are inc and exp
 		data.allItems[type].forEach(function(current) {
 			
 			// Add the sum to the current value starting at 0. This is the same as sum = sum + current.value
@@ -41,25 +39,23 @@ var budgetController = (function() {
 		allItems: {
 			exp: [],
 			inc: [],
-			
 		},
 		totals: {
 			exp: 0,
 			inc: 0,
-
 		},
 		budget: 0,
-		// we set it to -1 because it doesn't exsist yet. 0 means it exsists.
+		// Set to -1 because it doesn't exsist yet. 0 means it exsists.
 		percentage: -1
 	
 	}
 
-	// Creating a new item with expence or income conditions that we get from the UIController
+	// Creating a new item with expense or income conditions from the UIController
 	return {
 		addItem: function(type, des, val) {
 			var newItem, ID
 
-			// ID = last ID + 1. This analizes the last index of the ID's and THEN creates an ID
+			// ID = last ID + 1. This analyzes the last index of the ID's and THEN creates an ID
 			if (data.allItems[type].length > 0) {
 				ID = data.allItems[type][data.allItems[type].length - 1].id + 1
 			} else {
@@ -68,27 +64,46 @@ var budgetController = (function() {
 
 			// Creates new item based on 'inc' or 'exp' type
 			if (type === 'exp') {
-				newItem = new Expence(ID, des, val)
+				newItem = new Expense(ID, des, val)
 			} else if (type === 'inc') {
 				newItem = new Income(ID, des, val)
 			}
 			
-			// Pushes it into our data structure
+			// Pushes it into the data structure
 			data.allItems[type].push(newItem)
 			return newItem
 		
 		},
 
+		deleteItem: function(type, id) {
+
+			// This .map() loop is similar to the .forEach() loop but it only will return an array of the type's(inc of exp) id numbers ('current.id'). Then the id numbers array is stored in the ids variable
+			var ids = data.allItems[type].map(function(current) {
+				return current.id
+			})
+
+			// This returns the index number of 'id' in the 'ids' array and stores it in the 'index' variable
+			index = ids.indexOf(id)
+
+			// If the index exists, then...
+			if (index !== -1) {
+
+				// Splice is used to specify what to remove(index), and how many to remove(1)
+				data.allItems[type].splice(index, 1)
+			}
+
+		},
+
 		calculateBudget: function() {
 
-			// calculate total income and expenses
+			// Calculate total income and expenses
 			calculateTotal('exp')
 			calculateTotal('inc')
 
-			// calculate the budget: income - expenses
+			// Calculate the budget: income - expenses
 			data.budget = data.totals.inc - data.totals.exp
 
-			// calculate the percentage of the income that we spent
+			// Calculate the percentage of the income spent
 			if (data.totals.inc > 0) {
 			data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100)
 			} else {
@@ -117,17 +132,16 @@ var budgetController = (function() {
 
 // UI CONTROLLER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //*****************************************************
-
 var UIController = (function() {
 
-	// Creating a DOMstrings object to get rid of our strings in our getInput querySelectors
+	// Creating a DOMstrings object to get rid of the strings in the getInput querySelectors
 	var DOMstrings = {
 		inputType: '.add__type',
 		inputDescription: '.add__description',
 		inputValue: '.add__value',
 		inputBtn: '.add__btn',
 		incomeContainer: '.income__list',
-		expenceContainer: '.expenses__list',
+		expenseContainer: '.expenses__list',
 		budgetLable: '.budget__value',
 		incomeLable: '.budget__income--value',
 		expenseLable: '.budget__expenses--value',
@@ -140,10 +154,10 @@ var UIController = (function() {
 
 			return {
 				
-				// instead of creating variables for each querySelector, we are returning all three as an object
-				type: document.querySelector(DOMstrings.inputType).value,	// will be inc or exp
+				// Instead of creating variables for each querySelector, return all three as an object
+				type: document.querySelector(DOMstrings.inputType).value,	// Will be inc or exp
 				description: document.querySelector(DOMstrings.inputDescription).value,
-				// ParseFloat converts numbers that are strings to intigers with decimals
+				// parseFloat() converts numbers that are strings to intigers with decimals
 				value: parseFloat(document.querySelector(DOMstrings.inputValue).value)
 			}
 		},
@@ -156,7 +170,7 @@ var UIController = (function() {
 				html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">+ %value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
 				
 			} else if (type === 'exp') {
-				element = DOMstrings.expenceContainer
+				element = DOMstrings.expenseContainer
       	html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description% rent</div><div class="right clearfix"><div class="item__value">- %value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
 				
 			}
@@ -173,16 +187,25 @@ var UIController = (function() {
 
 		},
 
+		deleteListItem: function(selectorId){
+
+			// Grab the parent id
+			var el = document.getElementById(selectorId)
+			// Remove the child id
+			el.parentNode.removeChild(el)
+
+		},
+
 		clearFields: function() {
 			var fields, fieldsArr
 			
-			// We use querySelectorAll to select both strings. We have to seperate each one with a comma string
+			// querySelectorAll to select both strings. Seperate each one with a comma string
 			fields = document.querySelectorAll(DOMstrings.inputDescription + ', ' + DOMstrings.inputValue)
 
-			// When using SelectorAll, it gives us a list and not a typical array so we have to use the slice method. We are effecting the constructor so we use the prototype to the constructors array.
+			// When using SelectorAll, it gives a list and not a typical array so use the slice method. It effects the constructor so use the prototype to the constructor's array.
 			fieldsArr = Array.prototype.slice.call(fields)
 
-			// forEach method loops through the array and we can pass up to 3 arguments.
+			// forEach method loops through the array and can pass up to 3 arguments.
 			fieldsArr.forEach(function(current, index, array) {
 				
 				// This clears the values in DOMstings.inputDescription and DOMstrings.inputValue
@@ -208,7 +231,7 @@ var UIController = (function() {
 
 		},
 		
-		// This exposes our DOMstrings to the public so we can use them globally
+		// This exposes the DOMstrings to the public to use them globally
 		getDomstrings: function() {
 			return DOMstrings
 		}
@@ -220,7 +243,6 @@ var UIController = (function() {
 // GLOBAL APP CONTROLLER!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 //*****************************************************
-
 var controller = (function(budgetCtrl, UICtrl) {
 
 	// Event Listener Function
@@ -240,6 +262,9 @@ var controller = (function(budgetCtrl, UICtrl) {
 				ctrlAddItem()
 			}
 		})
+
+		// Delete item button Handler. Add a listener to the container because it's the parent of all the items that will be added.
+		document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem)
 
 	}
 
@@ -281,6 +306,32 @@ var controller = (function(budgetCtrl, UICtrl) {
 		}
 
 	}
+
+	var ctrlDeleteItem = function(event) {
+		var itemId, splitId, type, ID
+		
+		// Using event bubbling, targeting the delete button, then traveling all the way to the parent container's id. parentNode is used four times to reach the container id.(DOM traversing)
+		itemId = event.target.parentNode.parentNode.parentNode.parentNode.id
+
+		if (itemId) {
+			// .split() turns the itemId string, 'inc-1', into two usable parts seperating them at '-'. It turns the string number into an integer.
+			splitId = itemId.split('-')
+			type = splitId[0]
+			ID = parseInt(splitId[1])
+
+			// 1. Delete the item from the data structure
+			budgetCtrl.deleteItem(type, ID)
+			budgetCtrl.testing();
+
+			// 2. Delete the item from the UI
+			UICtrl.deleteListItem(itemId)
+
+			// 3. Update and show the new budget
+			updateBudget()
+
+		}
+
+	}
 	
 	// This init function is public/Global to call the setUpEventListener function 
 	return {
@@ -296,7 +347,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 		}
 	}
 
-// passing these controllers in the IIFE Global Controller functiion call allows them to communicate in this Controller
+// Passing these controllers in the IIFE Global Controller functiion call allows them to communicate in this Controller
 })(budgetController, UIController)
 
 // This calls the init function to start the app
