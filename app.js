@@ -9,6 +9,22 @@ var budgetController = (function() {
 		this.id = id
 		this.description = description
 		this.value = value
+		this.percentage = -1
+	}
+
+	// Creating a prototype function in the Expense constructor to calculate expense percentages of the total income 
+	Expense.prototype.calPercentage = function(totalIncome) {
+		if (totalIncome > 0) {
+		this.percentage = Math.round((this.value / totalIncome) * 100)
+			
+		} else {
+			this.percentage = -1
+		}
+	}
+
+	// Returns the percentage to the Expense Constructor
+	Expense.prototype.getPercentage = function() {
+		return this.percentage
 	}
 
 	// Income Constructor
@@ -112,6 +128,22 @@ var budgetController = (function() {
 
 		},
 
+		calculatePercentage: function() {
+
+			data.allItems.exp.forEach(function(current) {
+				current.calPercentage(data.totals.inc)
+			})
+
+		},
+
+		getPercentage: function() {
+
+			var allPerc = data.allItems.exp.map(function(current) {
+				return current.getPercentage()
+			})
+			return allPerc
+		},
+
 		getBudget: function() {
 			return {
 				budget: data.budget,
@@ -146,7 +178,8 @@ var UIController = (function() {
 		incomeLable: '.budget__income--value',
 		expenseLable: '.budget__expenses--value',
 		percentageLable: '.budget__expenses--percentage',
-		container: '.container'
+		container: '.container',
+		expPercLabel: '.item__percentage'
 	}
 
 	return {
@@ -171,7 +204,7 @@ var UIController = (function() {
 				
 			} else if (type === 'exp') {
 				element = DOMstrings.expenseContainer
-      	html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description% rent</div><div class="right clearfix"><div class="item__value">- %value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
+      	html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">- %value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
 				
 			}
                             
@@ -230,6 +263,32 @@ var UIController = (function() {
 			}
 
 		},
+
+		displayPercentage: function(percentage) {
+
+			// this creates a node list
+			var fields = document.querySelectorAll(DOMstrings.expPercLabel)
+
+			// loops through the node list
+			var nodeListForEach = function(list, callback) {
+				for (var i = 0; i < list.length; i++) {
+					callback(list[i], i)
+				}
+			}
+
+			nodeListForEach(fields, function(current, index) {
+
+				if (percentage[index] > 0) {
+				current.textContent = percentage[index] + '%'
+					
+				} else {
+					current.textContent = '---'
+				}
+
+
+			})
+
+		},
 		
 		// This exposes the DOMstrings to the public to use them globally
 		getDomstrings: function() {
@@ -268,6 +327,19 @@ var controller = (function(budgetCtrl, UICtrl) {
 
 	}
 
+	var updatePercentage = function() {
+
+		// 1. Calculate percentages
+		budgetCtrl.calculatePercentage()
+
+		// 2. Read percentages from the budget
+		var percentage = budgetCtrl.getPercentage()
+		// 3. Update the UI with the new percentages
+		UICtrl.displayPercentage(percentage)
+		console.log(percentage)
+
+	}
+
 	var updateBudget = function() {
 
 		// 1. Calculate the budget
@@ -303,6 +375,9 @@ var controller = (function(budgetCtrl, UICtrl) {
 
 		// 5. Calculate and update budget
 		updateBudget()
+		
+		// 6. Calculate and update percentages
+		updatePercentage()
 		}
 
 	}
@@ -329,6 +404,9 @@ var controller = (function(budgetCtrl, UICtrl) {
 			// 3. Update and show the new budget
 			updateBudget()
 
+			// 4. Calculate and update percentages
+			updatePercentage()
+
 		}
 
 	}
@@ -352,4 +430,3 @@ var controller = (function(budgetCtrl, UICtrl) {
 
 // This calls the init function to start the app
 controller.init()		
-		                                                                                                                                                                                                                                                                                                   
