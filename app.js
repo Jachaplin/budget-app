@@ -154,7 +154,7 @@ var budgetController = (function() {
 		},
 
 		testing: function() {
-			console.log(data)
+			// console.log(data)
 		}
 	}
 
@@ -403,7 +403,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 		
 		// 3. Update the UI with the new percentages
 		UICtrl.displayPercentage(percentage)
-		console.log(percentage)
+		// console.log(percentage)
 
 	}
 
@@ -417,7 +417,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 
 		// 3. Display the budget on the UI
 		UICtrl.displayBudget(budget)
-		console.log(budget)
+		// console.log(budget)
 
 	}
 
@@ -481,7 +481,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 	// This init function is public/Global to call the setUpEventListener function 
 	return {
 		init: function() {
-			console.log('Application has started')
+			// console.log('Application has started')
 			UICtrl.displayMonth()
 			UICtrl.displayBudget({
 				budget: 0,
