@@ -179,11 +179,13 @@ var UIController = (function() {
 		expenseLable: '.budget__expenses--value',
 		percentageLable: '.budget__expenses--percentage',
 		container: '.container',
-		expPercLabel: '.item__percentage'
+		expPercLabel: '.item__percentage',
+		dateLabel: '.budget__title--month'
 	}
 
 	var formatNumber = function(num, type) {
 		var numSplit, int, dec
+		
 		num = Math.abs(num)
 		num = num.toFixed(2)
 
@@ -210,7 +212,9 @@ var UIController = (function() {
 				
 				// Instead of creating variables for each querySelector, return all three as an object
 				type: document.querySelector(DOMstrings.inputType).value,	// Will be inc or exp
+				
 				description: document.querySelector(DOMstrings.inputDescription).value,
+				
 				// parseFloat() converts numbers that are strings to intigers with decimals
 				value: parseFloat(document.querySelector(DOMstrings.inputValue).value)
 			}
@@ -218,6 +222,7 @@ var UIController = (function() {
 
 		addListItem: function(obj, type) {
 			var html, newHtml, element
+			
 			// Create HTML sting with placeholder text
 			if (type === 'inc') {
 				element = DOMstrings.incomeContainer
@@ -230,7 +235,6 @@ var UIController = (function() {
 			}
                             
 			// Replace placeholder text with some real data
-
 			newHtml = html.replace('%id%', obj.id)
 			newHtml = newHtml.replace('%description%', obj.description)
 			newHtml = newHtml.replace('%value%', formatNumber(obj.value, type))
@@ -293,7 +297,7 @@ var UIController = (function() {
 			// this creates a node list
 			var fields = document.querySelectorAll(DOMstrings.expPercLabel)
 
-			// loops through the node list
+			// loops through the node list and sets the loop as nodeListForEach
 			var nodeListForEach = function(list, callback) {
 				for (var i = 0; i < list.length; i++) {
 					callback(list[i], i)
@@ -309,8 +313,23 @@ var UIController = (function() {
 					current.textContent = '---'
 				}
 
-
 			})
+
+		},
+
+		displayMonth: function() {
+			var now, year, month, months
+			
+			// new Date() is a Javascript built in constructor with built in functions to call
+			now = new Date()
+
+			// Creating an array of months to attach to the number the getMonth() gives
+			months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+			
+			month = now.getMonth()
+			year = now.getFullYear()
+			
+			document.querySelector(DOMstrings.dateLabel).textContent = months[month] + ' ' + year
 
 		},
 		
@@ -358,6 +377,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 
 		// 2. Read percentages from the budget
 		var percentage = budgetCtrl.getPercentage()
+		
 		// 3. Update the UI with the new percentages
 		UICtrl.displayPercentage(percentage)
 		console.log(percentage)
@@ -439,6 +459,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 	return {
 		init: function() {
 			console.log('Application has started')
+			UICtrl.displayMonth()
 			UICtrl.displayBudget({
 				budget: 0,
 				totalInc: 0,
