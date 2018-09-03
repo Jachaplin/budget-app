@@ -205,6 +205,13 @@ var UIController = (function() {
 
 	}
 
+	// loops through the node list and sets the loop as nodeListForEach
+	var nodeListForEach = function(list, callback) {
+		for (var i = 0; i < list.length; i++) {
+			callback(list[i], i)
+		}
+	}
+
 	return {
 		getInput: function() {
 
@@ -297,12 +304,6 @@ var UIController = (function() {
 			// this creates a node list
 			var fields = document.querySelectorAll(DOMstrings.expPercLabel)
 
-			// loops through the node list and sets the loop as nodeListForEach
-			var nodeListForEach = function(list, callback) {
-				for (var i = 0; i < list.length; i++) {
-					callback(list[i], i)
-				}
-			}
 
 			nodeListForEach(fields, function(current, index) {
 
@@ -330,6 +331,25 @@ var UIController = (function() {
 			year = now.getFullYear()
 			
 			document.querySelector(DOMstrings.dateLabel).textContent = months[month] + ' ' + year
+
+		},
+
+		changeType: function() {
+
+			// Creating our list of nodes to change CSS
+			var fields = document.querySelectorAll(
+				DOMstrings.inputType + ',' +
+				DOMstrings.inputDescription + ',' +
+				DOMstrings.inputValue
+			)
+
+			// Loops through the input nodes and toggles between the CSS class
+			nodeListForEach(fields, function(current) {
+				current.classList.toggle('red-focus')
+			})
+
+			// This toggles the CSS class for the button
+			document.querySelector(DOMstrings.inputBtn).classList.toggle('red')
 
 		},
 		
@@ -367,6 +387,9 @@ var controller = (function(budgetCtrl, UICtrl) {
 
 		// Delete item button Handler. Add a listener to the container because it's the parent of all the items that will be added.
 		document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem)
+
+		// This changes the input and button color depending on adding an expense or income
+		document.querySelector(DOM.inputType).addEventListener('change', UICtrl.changeType)
 
 	}
 
